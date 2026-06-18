@@ -16,22 +16,16 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const u = getUser();
-    if (!u || u.role !== "admin") {
-      router.push("/login");
-      return;
-    }
+    if (!u || u.role !== "admin") { router.push("/login"); return; }
     setUser(u);
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const [companiesRes, jobsRes] = await Promise.all([
-        getAllCompanies(),
-        getJobs(),
-      ]);
-      setCompanies(companiesRes.data.companies);
-      setJobs(jobsRes.data.jobs);
+      const [companiesRes, jobsRes] = await Promise.all([getAllCompanies(), getJobs()]);
+      setCompanies(companiesRes.data.companies || companiesRes.data || []);
+      setJobs(jobsRes.data.jobs || jobsRes.data || []);
     } catch (error) {
       console.log(error);
     }
@@ -49,22 +43,37 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleVerifyCompany = async (companyId: string, isVerified: boolean) => {
+    try {
+      const { updateCompany } = await import("@/lib/api");
+      await updateCompany(companyId, { is_verified: !isVerified });
+      setCompanies(companies.map((c) =>
+        c.id === companyId ? { ...c, is_verified: !isVerified } : c
+      ));
+      toast.success("Company updated");
+    } catch (error) {
+      toast.error("Failed to update company");
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0B0E0D] flex items-center justify-center">
         <p className="text-gray-400">Loading admin dashboard...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-[#0B0E0D] text-white">
       {/* Navbar */}
-      <div className="border-b border-gray-800 px-6 py-4 flex items-center justify-between sticky top-0 bg-gray-950/90 backdrop-blur z-40">
+      <div className="border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 bg-[#0B0E0D]/95 backdrop-blur z-40">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-sm">S</div>
-          <span className="text-xl font-bold">Smart<span className="text-blue-400">Hire</span></span>
-          <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full ml-1">Admin</span>
+          <div className="w-8 h-8 bg-emerald-500 rounded flex items-center justify-center">
+            <span className="text-black font-bold text-sm">S</span>
+          </div>
+          <span className="text-lg font-bold">SmartHire</span>
+          <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full ml-1">Admin</span>
         </Link>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-400">{user?.name}</span>
@@ -85,10 +94,10 @@ export default function AdminDashboard() {
           {[
             { label: "Total Companies", value: companies.length, icon: "🏢" },
             { label: "Total Jobs", value: jobs.length, icon: "💼" },
-            { label: "Active Jobs", value: jobs.filter(j => j.is_active).length, icon: "✅" },
-            { label: "Industries", value: [...new Set(companies.map(c => c.industry).filter(Boolean))].length, icon: "🏭" },
+            { label: "Active Jobs", value: jobs.filter((j) => j.is_active).length, icon: "✅" },
+            { label: "Industries", value: [...new Set(companies.map((c) => c.industry).filter(Boolean))].length, icon: "🏭" },
           ].map((stat) => (
-            <div key={stat.label} className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+            <div key={stat.label} className="bg-[#111513] border border-white/10 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-gray-400 text-xs">{stat.label}</p>
                 <span className="text-2xl">{stat.icon}</span>
@@ -99,15 +108,13 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-800 pb-4">
+        <div className="flex gap-2 mb-6 border-b border-white/5 pb-4">
           {["overview", "companies", "jobs"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition ${
-                activeTab === tab
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-400 hover:text-white hover:bg-gray-800"
+                activeTab === tab ? "bg-emerald-500 text-black" : "text-gray-400 hover:text-white hover:bg-white/5"
               }`}
             >
               {tab}
@@ -118,16 +125,15 @@ export default function AdminDashboard() {
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Companies */}
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <div className="bg-[#111513] border border-white/10 rounded-2xl p-6">
               <h3 className="font-semibold mb-4">Recent Companies</h3>
               {companies.length === 0 ? (
                 <p className="text-gray-400 text-sm text-center py-8">No companies yet</p>
               ) : (
                 <div className="space-y-3">
                   {companies.slice(0, 5).map((company) => (
-                    <div key={company.id} className="flex items-center gap-3 p-3 bg-gray-800 rounded-xl">
-                      <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center font-bold text-blue-400">
+                    <div key={company.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                      <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center font-bold text-emerald-400">
                         {company.name[0]}
                       </div>
                       <div className="flex-1">
@@ -135,9 +141,7 @@ export default function AdminDashboard() {
                         <p className="text-xs text-gray-400">{company.industry} • {company.location}</p>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full ${
-                        company.is_verified
-                          ? "bg-green-500/10 text-green-400"
-                          : "bg-yellow-500/10 text-yellow-400"
+                        company.is_verified ? "bg-emerald-500/10 text-emerald-400" : "bg-yellow-500/10 text-yellow-400"
                       }`}>
                         {company.is_verified ? "Verified" : "Pending"}
                       </span>
@@ -147,23 +151,20 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* Recent Jobs */}
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <div className="bg-[#111513] border border-white/10 rounded-2xl p-6">
               <h3 className="font-semibold mb-4">Recent Jobs</h3>
               {jobs.length === 0 ? (
                 <p className="text-gray-400 text-sm text-center py-8">No jobs yet</p>
               ) : (
                 <div className="space-y-3">
                   {jobs.slice(0, 5).map((job) => (
-                    <div key={job.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-xl">
+                    <div key={job.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                       <div>
                         <p className="text-sm font-semibold">{job.title}</p>
                         <p className="text-xs text-gray-400">{job.companies?.name} • {job.location}</p>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full ${
-                        job.is_active
-                          ? "bg-green-500/10 text-green-400"
-                          : "bg-red-500/10 text-red-400"
+                        job.is_active ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
                       }`}>
                         {job.is_active ? "Active" : "Inactive"}
                       </span>
@@ -177,7 +178,7 @@ export default function AdminDashboard() {
 
         {/* Companies Tab */}
         {activeTab === "companies" && (
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+          <div className="bg-[#111513] border border-white/10 rounded-2xl overflow-hidden">
             {companies.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-4xl mb-3">🏢</p>
@@ -186,7 +187,7 @@ export default function AdminDashboard() {
             ) : (
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-800 text-left text-sm text-gray-400">
+                  <tr className="border-b border-white/10 text-left text-sm text-gray-400">
                     <th className="px-6 py-4">Company</th>
                     <th className="px-6 py-4">Industry</th>
                     <th className="px-6 py-4">Location</th>
@@ -197,10 +198,10 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {companies.map((company) => (
-                    <tr key={company.id} className="border-b border-gray-800 last:border-0">
+                    <tr key={company.id} className="border-b border-white/5 last:border-0">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 bg-blue-500/10 rounded-xl flex items-center justify-center font-bold text-blue-400 text-sm">
+                          <div className="w-9 h-9 bg-emerald-500/10 rounded-xl flex items-center justify-center font-bold text-emerald-400 text-sm">
                             {company.name[0]}
                           </div>
                           <div>
@@ -214,32 +215,15 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 text-sm text-gray-400">{company.size || "—"}</td>
                       <td className="px-6 py-4">
                         <span className={`text-xs px-2 py-1 rounded-full ${
-                          company.is_verified
-                            ? "bg-green-500/10 text-green-400"
-                            : "bg-yellow-500/10 text-yellow-400"
+                          company.is_verified ? "bg-emerald-500/10 text-emerald-400" : "bg-yellow-500/10 text-yellow-400"
                         }`}>
                           {company.is_verified ? "Verified" : "Pending"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <button
-                          onClick={async () => {
-                            try {
-                              const { updateCompany } = await import("@/lib/api");
-                              await updateCompany(company.id, {
-                                is_verified: !company.is_verified
-                              });
-                              setCompanies(companies.map((c) =>
-                                c.id === company.id
-                                  ? { ...c, is_verified: !c.is_verified }
-                                  : c
-                              ));
-                              toast.success("Company updated");
-                            } catch (error) {
-                              toast.error("Failed to update");
-                            }
-                          }}
-                          className="text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg transition"
+                          onClick={() => handleVerifyCompany(company.id, company.is_verified)}
+                          className="text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-lg transition"
                         >
                           {company.is_verified ? "Unverify" : "Verify"}
                         </button>
@@ -254,7 +238,7 @@ export default function AdminDashboard() {
 
         {/* Jobs Tab */}
         {activeTab === "jobs" && (
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+          <div className="bg-[#111513] border border-white/10 rounded-2xl overflow-hidden">
             {jobs.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-4xl mb-3">💼</p>
@@ -263,7 +247,7 @@ export default function AdminDashboard() {
             ) : (
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-800 text-left text-sm text-gray-400">
+                  <tr className="border-b border-white/10 text-left text-sm text-gray-400">
                     <th className="px-6 py-4">Job</th>
                     <th className="px-6 py-4">Company</th>
                     <th className="px-6 py-4">Type</th>
@@ -274,25 +258,19 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {jobs.map((job) => (
-                    <tr key={job.id} className="border-b border-gray-800 last:border-0">
+                    <tr key={job.id} className="border-b border-white/5 last:border-0">
                       <td className="px-6 py-4">
                         <p className="font-semibold text-sm">{job.title}</p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(job.created_at).toLocaleDateString()}
-                        </p>
+                        <p className="text-xs text-gray-400">{new Date(job.created_at).toLocaleDateString()}</p>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-400">{job.companies?.name}</td>
                       <td className="px-6 py-4">
-                        <span className="text-xs bg-blue-500/10 text-blue-400 px-2 py-1 rounded-full">
-                          {job.job_type}
-                        </span>
+                        <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-full">{job.job_type}</span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-400">{job.location}</td>
                       <td className="px-6 py-4">
                         <span className={`text-xs px-2 py-1 rounded-full ${
-                          job.is_active
-                            ? "bg-green-500/10 text-green-400"
-                            : "bg-red-500/10 text-red-400"
+                          job.is_active ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
                         }`}>
                           {job.is_active ? "Active" : "Inactive"}
                         </span>
