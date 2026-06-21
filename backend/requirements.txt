@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+supabase
+groq
+pdfplumber
+PyPDF2
+python-multipart
+aiofiles
+python-dotenv
