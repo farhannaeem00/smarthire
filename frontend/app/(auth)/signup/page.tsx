@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import { signUp, createCompany } from "@/lib/api";
 import { setToken, setUser } from "@/lib/auth";
@@ -6,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [role, setRole] = useState("candidate");
@@ -134,76 +135,49 @@ export default function SignupPage() {
               <label className="text-sm font-medium text-gray-300 mb-1.5 block">
                 {role === "company" ? "Your Name *" : "Full Name *"}
               </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)}
                 placeholder="Farhan Naeem"
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-              />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition" />
             </div>
 
             {role === "company" && (
               <>
                 <div>
                   <label className="text-sm font-medium text-gray-300 mb-1.5 block">Company Name *</label>
-                  <input
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
+                  <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)}
                     placeholder="Tech Corp"
-                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                  />
+                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-300 mb-1.5 block">Industry</label>
-                  <input
-                    type="text"
-                    value={industry}
-                    onChange={(e) => setIndustry(e.target.value)}
+                  <input type="text" value={industry} onChange={(e) => setIndustry(e.target.value)}
                     placeholder="Technology"
-                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                  />
+                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-300 mb-1.5 block">Location</label>
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
+                  <input type="text" value={location} onChange={(e) => setLocation(e.target.value)}
                     placeholder="Lahore, Pakistan"
-                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                  />
+                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition" />
                 </div>
               </>
             )}
 
             <div>
               <label className="text-sm font-medium text-gray-300 mb-1.5 block">Email *</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-              />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition" />
             </div>
             <div>
               <label className="text-sm font-medium text-gray-300 mb-1.5 block">Password *</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-              />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition" />
             </div>
 
-            <button
-              onClick={handleSignup}
-              disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-semibold py-3.5 rounded-xl transition"
-            >
+            <button onClick={handleSignup} disabled={loading}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-semibold py-3.5 rounded-xl transition">
               {loading ? "Creating account..." : "Create Account"}
             </button>
           </div>
@@ -215,5 +189,17 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0B0E0D] flex items-center justify-center">
+        <p className="text-gray-400">Loading...</p>
+      </div>
+    }>
+      <SignupForm />
+    </Suspense>
   );
 }
