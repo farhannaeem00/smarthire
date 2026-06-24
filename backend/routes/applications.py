@@ -4,8 +4,7 @@ from typing import Optional
 from db.supabase_client import supabase
 from services.groq_service import analyze_resume
 from services.pdf_service import extract_text_from_pdf
-import shutil
-import os
+
 
 router = APIRouter()
 
@@ -29,15 +28,9 @@ async def apply_for_job(
                 detail="You have already applied for this job"
             )
 
-        # Save resume temporarily
-        # Save resume to /tmp (Vercel allows /tmp only)
-        temp_path = f"/tmp/temp_{resume.filename}"
-        with open(temp_path, "wb") as f:
-            shutil.copyfileobj(resume.file, f)
-
-        # Extract text from resume
-        resume_text = extract_text_from_pdf(temp_path)
-        os.remove(temp_path)
+        # Read resume into memory — no file writing needed
+        file_content = await resume.read()
+        resume_text = extract_text_from_pdf(file_content)
 
         if not resume_text:
             resume_text = "Resume uploaded but text could not be extracted. Please evaluate manually."
