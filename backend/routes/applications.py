@@ -30,7 +30,8 @@ async def apply_for_job(
             )
 
         # Save resume temporarily
-        temp_path = f"./temp_{resume.filename}"
+        # Save resume to /tmp (Vercel allows /tmp only)
+        temp_path = f"/tmp/temp_{resume.filename}"
         with open(temp_path, "wb") as f:
             shutil.copyfileobj(resume.file, f)
 

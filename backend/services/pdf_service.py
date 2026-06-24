@@ -3,8 +3,6 @@ import os
 
 def extract_text_from_pdf(file_path: str) -> str:
     text = ""
-
-    # Try pdfplumber first
     try:
         with pdfplumber.open(file_path) as pdf:
             for page in pdf.pages:
@@ -14,7 +12,6 @@ def extract_text_from_pdf(file_path: str) -> str:
     except Exception as e:
         print(f"pdfplumber error: {e}")
 
-    # Try PyPDF2 as fallback
     if not text.strip():
         try:
             import PyPDF2
